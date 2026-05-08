@@ -1,8 +1,5 @@
 /**
- * db/init.js  — v3.1 owner sistemi
- * users.role → 'user' | 'owner' | 'admin'
- * restaurants: owner_id, status (pending/approved/rejected), capacity
- * uploads tablosu: yüklenen fotoğraflar
+ * db/init.js  — v3.2 Vercel & Production Fix
  */
 import { createRequire } from 'module'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
@@ -13,22 +10,40 @@ import bcrypt from 'bcryptjs'
 const require   = createRequire(import.meta.url)
 const initSqlJs = require('sql.js')
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const DB_PATH   = path.join(__dirname, '..', 'gastrovibe.db')
+
+// --- VERCELE ÖZEL YOL AYARLARI ---
+// Vercel'de sadece /tmp klasörüne yazma izni vardır.
+const DB_PATH = process.env.NODE_ENV === 'production' 
+  ? '/tmp/gastrovibe.db' 
+  : path.join(__dirname, '..', 'gastrovibe.db')
+
+// WASM dosyasının yerini Vercel'e tarif ediyoruz
+const WASM_PATH = process.env.NODE_ENV === 'production'
+  ? path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm')
+  : path.join(__dirname, '..', 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm')
 
 let db = null, SQL = null
 
-function persist() { writeFileSync(DB_PATH, Buffer.from(db.export())) }
+function persist() { 
+  if (!db) return
+  writeFileSync(DB_PATH, Buffer.from(db.export())) 
+}
 
 export async function initDb() {
   if (db) return db
-  SQL = await initSqlJs()
+
+  // WASM dosyasını yükle
+  SQL = await initSqlJs({
+    locateFile: file => WASM_PATH
+  })
+
   if (existsSync(DB_PATH)) {
     db = new SQL.Database(readFileSync(DB_PATH))
-    console.log('   DB:  gastrovibe.db yüklendi ✅')
+    console.log(`   DB: ${DB_PATH} yüklendi ✅`)
     migrate()
   } else {
     db = new SQL.Database()
-    console.log('   DB:  gastrovibe.db oluşturuluyor...')
+    console.log('   DB: Yeni veritabanı oluşturuluyor...')
     initSchema()
     seedIfEmpty()
     persist()
@@ -47,40 +62,43 @@ export function all(sql, params = []) {
   while (stmt.step()) rows.push(stmt.getAsObject())
   stmt.free(); return rows
 }
+
 export function get(sql, params = []) { return all(sql, params)[0] ?? null }
+
 export function run(sql, params = []) {
   db.run(sql, params)
   const meta = db.exec('SELECT last_insert_rowid() as id, changes() as c')[0]
   const row = meta ? { lastInsertRowid: meta.values[0][0], changes: meta.values[0][1] } : { lastInsertRowid: null, changes: 0 }
   persist(); return row
 }
+
 export function exec(sql) { db.exec(sql); persist() }
 
-// ─── Migration ────────────────────────────────────────────────
+// --- MIGRATION ---
 function migrate() {
   const safeAdd = (t, col, def) => { try { db.exec(`ALTER TABLE ${t} ADD COLUMN ${col} ${def}`) } catch {} }
-  safeAdd('users',       'role',     "TEXT DEFAULT 'user'")
+  safeAdd('users', 'role', "TEXT DEFAULT 'user'")
   safeAdd('restaurants', 'owner_id', 'INTEGER REFERENCES users(id) ON DELETE SET NULL')
-  safeAdd('restaurants', 'status',   "TEXT DEFAULT 'approved'")
+  safeAdd('restaurants', 'status', "TEXT DEFAULT 'approved'")
   safeAdd('restaurants', 'capacity', 'INTEGER DEFAULT 50')
   db.exec(`
     CREATE TABLE IF NOT EXISTS uploads (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
-      owner_id   INTEGER REFERENCES users(id) ON DELETE CASCADE,
-      filename   TEXT NOT NULL,
-      original   TEXT NOT NULL,
-      mimetype   TEXT NOT NULL,
-      size       INTEGER NOT NULL,
-      url        TEXT NOT NULL,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      filename TEXT NOT NULL,
+      original TEXT NOT NULL,
+      mimetype TEXT NOT NULL,
+      size INTEGER NOT NULL,
+      url TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
     );
   `)
   db.exec(`UPDATE restaurants SET status='approved' WHERE status IS NULL`)
   persist()
-  console.log('   DB:  Migrasyon tamamlandı ✅')
+  console.log('   DB: Migrasyon tamamlandı ✅')
 }
 
-// ─── Şema ─────────────────────────────────────────────────────
+// --- ŞEMA ---
 function initSchema() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -133,17 +151,10 @@ function initSchema() {
       author_avatar TEXT DEFAULT '✍️', read_minutes INTEGER DEFAULT 4,
       created_at TEXT DEFAULT (datetime('now'))
     );
-    CREATE TABLE IF NOT EXISTS uploads (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-      filename TEXT NOT NULL, original TEXT NOT NULL, mimetype TEXT NOT NULL,
-      size INTEGER NOT NULL, url TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    );
   `)
 }
 
-// ─── Seed ─────────────────────────────────────────────────────
+// --- SEED ---
 function seedIfEmpty() {
   if (get('SELECT COUNT(*) as c FROM restaurants').c > 0) return
   console.log('🌱 Seed ediliyor...')
@@ -186,7 +197,4 @@ function seedIfEmpty() {
     ['Restoran Demo Sahibi','owner@gastrovibe.com',bcrypt.hashSync('owner1234',10),'🏪','owner'])
 
   console.log('✅ Seed: 10 restoran, yorumlar, 3 demo kullanıcı')
-  console.log('   👤 demo@gastrovibe.com  / demo1234')
-  console.log('   🏪 owner@gastrovibe.com / owner1234')
-  console.log('   👑 admin@gastrovibe.com / admin1234')
 }
