@@ -1,0 +1,101 @@
+export const featuredRestaurants = [
+  {
+    id: 1,
+    name: 'Çınar Bahçe',
+    location: 'Mudanya, Bursa',
+    price: '₺₺₺',
+    rating: 4.9,
+    reviews: 284,
+    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
+    badges: [
+      { icon: '🌲', label: 'Orman İçinde',  color: 'green'  },
+      { icon: '🎶', label: 'Canlı Müzik',   color: 'dark'   },
+      { icon: '🚗', label: 'Vale Servisi',   color: 'orange' },
+    ],
+    description: 'Çam ormanları arasında, şelalenin sesiyle akşam yemeği.',
+    large: true,
+  },
+  {
+    id: 2,
+    name: 'Liman 1924',
+    location: 'Mudanya, Bursa',
+    price: '₺₺',
+    rating: 4.7,
+    reviews: 412,
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+    badges: [
+      { icon: '🌊', label: 'Deniz Kenarı', color: 'blue'  },
+      { icon: '🐟', label: 'Taze Balık',   color: 'dark'  },
+    ],
+    description: 'Uludağ manzarasıyla efsanevi balık sofrası.',
+    large: false,
+  },
+  {
+    id: 3,
+    name: 'Toprak Bistro',
+    location: 'Nilüfer, Bursa',
+    price: '₺₺₺',
+    rating: 4.8,
+    reviews: 176,
+    image: 'https://images.unsplash.com/photo-1550966871-3ed3cbe818b5?w=800&q=80',
+    badges: [
+      { icon: '✨', label: 'Modern Anadolu', color: 'orange' },
+      { icon: '🎶', label: 'Caz Geceleri',   color: 'dark'   },
+    ],
+    description: 'Haftalık caz geceleri ve çağdaş Anadolu lezzetleri.',
+    large: false,
+  },
+]
+
+export const discoveryRestaurants = [
+  {
+    id: 4,
+    name: 'Bursa Balıkçısı',
+    location: 'Mudanya · ₺₺',
+    badge: { icon: '🌊', label: 'Deniz Kenarı', color: 'blue' },
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=75',
+  },
+  {
+    id: 5,
+    name: 'Köşk 1890',
+    location: 'Bursa Merkez · ₺₺₺₺',
+    badge: { icon: '🏛️', label: 'Tarihi Yapı', color: 'dark' },
+    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=75',
+  },
+  {
+    id: 6,
+    name: 'Zeytinlik Sofra',
+    location: 'Gemlik · ₺₺',
+    badge: { icon: '🌿', label: 'Bahçe', color: 'green' },
+    image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=75',
+  },
+  {
+    id: 7,
+    name: 'Ateş Çukuru',
+    location: 'Yıldırım · ₺₺₺',
+    badge: { icon: '🔥', label: 'Ocakbaşı', color: 'orange' },
+    image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&q=75',
+  },
+  {
+    id: 8,
+    name: 'Sera Kahvaltı',
+    location: 'Osmangazi · ₺₺',
+    badge: { icon: '🌱', label: 'Organik', color: 'green' },
+    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=75',
+  },
+]
+
+export const experienceBadges = [
+  { icon: '🌊', label: 'Deniz & Göl Kenarı' },
+  { icon: '🌲', label: 'Orman İçinde'        },
+  { icon: '🎶', label: 'Canlı Müzik'         },
+  { icon: '🕯️', label: 'Romantik'            },
+  { icon: '👨‍👩‍👧', label: 'Aile Dostu'          },
+  { icon: '🔥', label: 'Ocakbaşı'            },
+  { icon: '🌅', label: 'Gün Batımı'          },
+  { icon: '🍷', label: 'Şarap Listesi'       },
+  { icon: '🏛️', label: 'Tarihi Mekan'        },
+  { icon: '🌿', label: 'Bahçe & Teras'       },
+  { icon: '🚗', label: 'Vale & Park'         },
+  { icon: '🎨', label: 'Sanatsal Atmosfer'   },
+]
