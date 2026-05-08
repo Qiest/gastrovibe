@@ -57,3 +57,5 @@ app.listen(PORT, () => {
   console.log(`   🏪 owner@gastrovibe.com / owner1234`)
   console.log(`   👑 admin@gastrovibe.com / admin1234\n`)
 })
+// server.js dosyanın en sonuna ekle (eğer yoksa)
+export default app;
