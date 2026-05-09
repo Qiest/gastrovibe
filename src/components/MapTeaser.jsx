@@ -1,9 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { useGlobalToast } from '../App'
 
 export default function MapTeaser() {
   const navigate = useNavigate()
-  const { info } = useGlobalToast()
 
   return (
     <div className="mx-8 my-8 rounded-4xl overflow-hidden flex flex-col md:flex-row"
@@ -19,7 +17,7 @@ export default function MapTeaser() {
         </p>
         <div className="flex gap-3 flex-wrap">
           <button
-            onClick={() => info('İnteraktif harita çok yakında! 🗺️')}
+            onClick={() => alert('İnteraktif harita çok yakında! 🗺️')}
             className="text-sm font-bold px-6 py-3 rounded-full bg-gv-white text-gv-emerald hover:bg-gv-cream transition-colors">
             🗺️ Haritayı Aç
           </button>
@@ -31,7 +29,6 @@ export default function MapTeaser() {
         </div>
       </div>
 
-      {/* Decorative map visual */}
       <div className="flex-1 relative map-grid flex items-center justify-center min-h-[200px] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 60% 50%, rgba(200,96,42,0.15) 0%, transparent 70%)' }} />
