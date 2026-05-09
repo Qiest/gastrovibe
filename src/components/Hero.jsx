@@ -1,22 +1,20 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useGlobalToast } from '../App'
 import AuthModal from './AuthModal'
 
 const FILTER_CHIPS = [
-  { label:'🌊 Deniz Kenarı', badge:'Deniz'   },
-  { label:'🌲 Doğa',         badge:'Orman'   },
+  { label:'🌊 Deniz Kenarı', badge:'Deniz'    },
+  { label:'🌲 Doğa',         badge:'Orman'    },
   { label:'🕯️ Romantik',    badge:'Romantik' },
-  { label:'🎶 Canlı Müzik',  badge:'Müzik'   },
+  { label:'🎶 Canlı Müzik',  badge:'Müzik'    },
   { label:'🔥 Ocakbaşı',     badge:'Ocakbaşı' },
-  { label:'🍷 Bar & Şarap',  badge:'Şarap'   },
+  { label:'🍷 Bar & Şarap',  badge:'Şarap'    },
 ]
 
 export default function Hero() {
   const { user }     = useAuth()
   const navigate     = useNavigate()
-  const { info }     = useGlobalToast()
   const [query,      setQuery]      = useState('')
   const [activeChip, setActiveChip] = useState(null)
   const [showAuth,   setShowAuth]   = useState(false)
