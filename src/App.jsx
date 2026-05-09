@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback, createContext, useContext } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
@@ -17,6 +17,56 @@ import BlogPage    from './pages/BlogPage'
 import CitiesPage  from './pages/CitiesPage'
 import ProfilePage from './pages/ProfilePage'
 
+// ─── Global Toast ─────────────────────────────────────────────
+const ToastContext = createContext(null)
+
+export function useGlobalToast() {
+  const ctx = useContext(ToastContext)
+  if (!ctx) return {
+    info:    (msg) => alert(msg),
+    success: (msg) => alert(msg),
+    error:   (msg) => alert(msg),
+  }
+  return ctx
+}
+
+function ToastProvider({ children }) {
+  const [toasts, setToasts] = useState([])
+
+  const push = useCallback((msg, type = 'info') => {
+    const id = Date.now()
+    setToasts(t => [...t, { id, msg, type }])
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000)
+  }, [])
+
+  const info    = useCallback((msg) => push(msg, 'info'),    [push])
+  const success = useCallback((msg) => push(msg, 'success'), [push])
+  const error   = useCallback((msg) => push(msg, 'error'),   [push])
+
+  const STYLES = {
+    info:    'bg-gv-ink text-white',
+    success: 'bg-green-600 text-white',
+    error:   'bg-red-500 text-white',
+  }
+
+  return (
+    <ToastContext.Provider value={{ info, success, error }}>
+      {children}
+      {/* Toast container */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 items-center pointer-events-none">
+        {toasts.map(t => (
+          <div key={t.id}
+            className={`px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap ${STYLES[t.type]}`}
+            style={{ animation: 'panelUp 0.25s ease' }}>
+            {t.msg}
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  )
+}
+
+// ─── Private Route ────────────────────────────────────────────
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return (
@@ -27,6 +77,7 @@ function PrivateRoute({ children }) {
   return user ? children : <Navigate to="/" replace />
 }
 
+// ─── Ana Sayfa ────────────────────────────────────────────────
 function HomePage() {
   return (
     <>
@@ -40,8 +91,8 @@ function HomePage() {
   )
 }
 
+// ─── App ──────────────────────────────────────────────────────
 function AppContent() {
-  // ─── Custom cursor — tüm sayfalarda aktif ─────────────────
   useEffect(() => {
     const dot  = document.getElementById('cursor-dot')
     const ring = document.getElementById('cursor-ring')
@@ -62,7 +113,6 @@ function AppContent() {
     document.addEventListener('mousemove', onMove, { passive: true })
     raf = requestAnimationFrame(animate)
 
-    // Tıklanabilir elemanlarda ring büyür
     const grow   = () => { ring.style.width = '52px'; ring.style.height = '52px'; ring.style.opacity = '0.35' }
     const shrink = () => { ring.style.width = '32px'; ring.style.height = '32px'; ring.style.opacity = '0.5'  }
 
@@ -76,8 +126,6 @@ function AppContent() {
     }
 
     bindCursor()
-
-    // Yeni render edilen elemanlar için MutationObserver
     const observer = new MutationObserver(bindCursor)
     observer.observe(document.body, { childList: true, subtree: true })
 
@@ -90,28 +138,22 @@ function AppContent() {
 
   return (
     <BrowserRouter>
-      {/* Cursor — DOM'da kalıcı */}
-      <div
-        id="cursor-dot"
+      <div id="cursor-dot"
         className="fixed top-0 left-0 w-2 h-2 rounded-full bg-gv-orange pointer-events-none z-[9999]"
         style={{ transition: 'none' }}
       />
-      <div
-        id="cursor-ring"
+      <div id="cursor-ring"
         className="fixed top-0 left-0 w-8 h-8 rounded-full border border-gv-orange/50 pointer-events-none z-[9998]"
         style={{ transition: 'width 0.2s, height 0.2s, opacity 0.2s' }}
       />
-
       <Navbar />
       <main>
         <Routes>
           <Route path="/"        element={<HomePage />} />
           <Route path="/blog"    element={<BlogPage />} />
           <Route path="/cities"  element={<CitiesPage />} />
-          <Route path="/profile" element={
-            <PrivateRoute><ProfilePage /></PrivateRoute>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+          <Route path="*"        element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <Footer />
@@ -123,7 +165,9 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </AuthProvider>
   )
 }
