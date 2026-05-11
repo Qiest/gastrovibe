@@ -1,20 +1,39 @@
-/**
- * services/email.js
- * (Geçici olarak devre dışı bırakıldı - Vercel çökmesini önlemek için)
- */
+import nodemailer from 'nodemailer';
 
-export const sendEmail = async (to, subject, text) => {
-  console.log(`✉️ Mail simüle edildi -> Kime: ${to} | Konu: ${subject}`);
-  // Sistem mail atmış gibi davranıp yoluna devam edecek, asla çökmeyecek.
+// Müşteriye hoş geldin maili
+export const sendWelcomeEmail = async (to, name) => {
+  console.log(`[Email Mock] Hoş geldin maili gönderildi -> ${to}`);
   return true;
 };
 
-// Eğer başka fonksiyonlar (sendWelcomeEmail vb.) varsa, onları da böyle boş döndürebilirsin:
-export const sendWelcomeEmail = async (email, name) => {
-  console.log(`✉️ Hoş geldin maili simüle edildi -> ${email}`);
+// Rezervasyon onay maili
+export const sendReservationConfirmation = async (to, name, details) => {
+  console.log(`[Email Mock] Rezervasyon onayı gönderildi -> ${to}`);
   return true;
 };
+
+// Müşteri tarafından rezervasyon iptali
+export const sendReservationCancelledByUser = async (to, name, details) => {
+  console.log(`[Email Mock] Müşteri iptal maili gönderildi -> ${to}`);
+  return true;
+};
+
+// İŞLETME tarafından rezervasyon iptali (Hata veren asıl fonksiyon)
 export const sendReservationCancelledByOwner = async (to, name, details) => {
-  console.log(`[Email Mock] İşletme tarafından iptal maili gönderildi -> ${to}`);
+  console.log(`[Email Mock] İşletme iptal maili gönderildi -> ${to}`);
   return true;
+};
+
+// Şifre sıfırlama veya diğer olası bildirimler
+export const sendStatusUpdateEmail = async (to, name, details) => {
+  console.log(`[Email Mock] Durum güncelleme maili gönderildi -> ${to}`);
+  return true;
+};
+
+export default {
+  sendWelcomeEmail,
+  sendReservationConfirmation,
+  sendReservationCancelledByUser,
+  sendReservationCancelledByOwner,
+  sendStatusUpdateEmail
 };
