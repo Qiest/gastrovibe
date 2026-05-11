@@ -26,6 +26,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const app = express()
 
+// VERCEL PROXY İZNİ (Rate Limit çökmesini engeller)
+app.set('trust proxy', 1)
+
 app.use(cors({
   origin: process.env.APP_URL || true,
   credentials: true,
