@@ -14,3 +14,7 @@ export const sendWelcomeEmail = async (email, name) => {
   console.log(`✉️ Hoş geldin maili simüle edildi -> ${email}`);
   return true;
 };
+export const sendReservationCancelledByOwner = async (to, name, details) => {
+  console.log(`[Email Mock] İşletme tarafından iptal maili gönderildi -> ${to}`);
+  return true;
+};
