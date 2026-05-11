@@ -1,15 +1,74 @@
-<!DOCTYPE html>
-<html lang="tr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GastroVibe – Deneyimi Keşfet</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
+/**
+ * api/index.js
+ * Vercel Serverless Function — Express uygulamasını sarmalayan handler.
+ */
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+// 1. KLASİK STATİK IMPORTLAR (Vercel'in kilitlenmesini engeller)
+import authRoutes from '../routes/auth.js'
+import restaurantRoutes from '../routes/restaurants.js'
+import reservationRoutes from '../routes/reservations.js'
+import favoriteRoutes from '../routes/favorites.js'
+import reviewRoutes from '../routes/reviews.js'
+import blogRoutes from '../routes/blog.js'
+import chatRoutes from '../routes/chat.js'
+import ownerRoutes from '../routes/owner.js'
+import adminRoutes from '../routes/admin.js'
+import uploadRoutes from '../routes/upload.js'
+
+import { initDb } from '../db/init.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const app = express()
+
+// VERCEL PROXY İZNİ (Rate Limit çökmesini engeller)
+app.set('trust proxy', 1)
+
+app.use(cors({
+  origin: process.env.APP_URL || true,
+  credentials: true,
+}))
+
+app.use(express.json())
+
+// Uploaded images (Vercel'de /tmp altında tutulur)
+app.use('/uploads', express.static(path.join('/tmp', 'uploads')))
+
+/* ── DB BAŞLATMA (Arka planda asenkron çalışır, Vercel'i bekletip patlatmaz) ── */
+initDb()
+  .then(() => console.log('✅ DB (Turso/Vercel) hazır'))
+  .catch((err) => console.error('❌ DB başlatılamadı:', err.message))
+
+/* ── ROUTES ── */
+app.use('/api/auth', authRoutes)
+app.use('/api/restaurants', restaurantRoutes)
+app.use('/api/reservations', reservationRoutes)
+app.use('/api/favorites', favoriteRoutes)
+app.use('/api/reviews', reviewRoutes)
+app.use('/api/blog', blogRoutes)
+app.use('/api/chat', chatRoutes)
+app.use('/api/owner', ownerRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/upload', uploadRoutes)
+
+app.get('/api/health', (_, res) => {
+  res.json({ status: 'ok', env: 'vercel' })
+})
+
+// 404 fallback for unknown /api/* paths
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: `Endpoint bulunamadı: ${req.path}` })
+})
+
+// Global error handler
+app.use((err, req, res, _next) => {
+  console.error('Express Hatası:', err.message)
+  res.status(500).json({ error: 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.' })
+})
+
+export default app
